@@ -1,0 +1,1 @@
+DALSI = "dalsi nastaveni napr URLs"
