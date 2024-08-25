@@ -56,7 +56,7 @@ Funkční automatizovaný systém, který každý den poskytne relevantní infor
 Když se změní nastavení Dockerfile / docker-compose.yml nebo soubory, které se kopírují do kontejneru, nutné rebuild image! ``` docker-compose up --build ```
 
 ```
-# DOCKER-COMPOSE
+# DOCKER-COMPOSE (do budoucna i s dbs)
 
 version: '3.8'
 services:

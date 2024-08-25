@@ -17,3 +17,6 @@ def get_prompts(city, day, lang):
     }}
     """
     return prompt
+
+def mail(domain):
+    return (f"https://api.mailgun.net/v3/{domain}/messages")

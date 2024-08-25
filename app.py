@@ -27,10 +27,12 @@ AI_API_KEY = os.getenv('AI_API_KEY')
 # print(f"Secret:{WEATHER_API_KEY}")
 # print(f"dalsi:{DALSI}")
 
-
-params = {'q': 'Prague,cz', 'units':'metric', 'APPID': WEATHER_API_KEY}
-# response = requests.get(WEATHER, params=params)
-# response_json = response.json()
+try:
+	params = {'q': 'Prague,cz', 'units':'metric','lang':'cz', 'APPID': WEATHER_API_KEY}
+	response = requests.get(WEATHER, params=params)
+	resp = response.json()
+except:
+	print("Weather API error") # log
 
 # predpoved 5 dni po 3 hodinach: # api.openweathermap.org/data/2.5/forecast?q=Prague,cz&units=metric&appid={APPI_KEY}
 # časy měření předpovědi: 00:00, 03:00, 06:00, 09:00, 12:00, 15:00, 18:00, 21:00, 00:00
@@ -1524,7 +1526,7 @@ testingjson="""
 }
 """
 
-resp = json.loads(testingjson)
+#resp = json.loads(testingjson)
 
 # ICON urls: https://openweathermap.org/img/wn/{ICON ID} ex: 11d.png
 
@@ -1557,12 +1559,12 @@ for measure in resp['list']:
 	daily_weather[date]['temp'].append(temp)
 	daily_weather[date]['temp_feel'].append(temp_feel)
 	
-print(f"\t{country} --- {city}")
-print(f"populace\t\t{population:,}".replace(',', ' ')) # přidání formátu "," po 3 cifrách (a poté nahrazení "," za mezery) 
-print(f"\nvýchod\t\t\tzápad") # přidání formátu "," po 3 cifrách (a poté nahrazení "," za mezery) 
-print(f"{datetime.fromtimestamp(int(sunrise)).strftime('%H:%M')}\t\t\t{datetime.fromtimestamp(int(sunset)).strftime('%H:%M')}")
-print(35*"=")
-#print(daily_weather)
+# print(f"\t{country} --- {city}")
+# print(f"populace\t\t{population:,}".replace(',', ' ')) # přidání formátu "," po 3 cifrách (a poté nahrazení "," za mezery) 
+# print(f"\nvýchod\t\t\tzápad") # přidání formátu "," po 3 cifrách (a poté nahrazení "," za mezery) 
+# print(f"{datetime.fromtimestamp(int(sunrise)).strftime('%H:%M')}\t\t\t{datetime.fromtimestamp(int(sunset)).strftime('%H:%M')}")
+# print(35*"=")
+# print(daily_weather)
 
 for date, data in daily_weather.items():
 	avg_temp, avg_temp_feel, most_common_weather, most_common_icon = calculate_daily_statistics(data) # výpočet prům teplot, nejčastějšího počasí v den + ikona
@@ -1599,19 +1601,180 @@ else:
 	params = {'key': AI_API_KEY}
 	try:
 		response = requests.post(AI_API, params=params, data=prompt)
+		
+		aijsontesting = """
+						{
+						    "candidates": [
+						        {
+						            "content": {
+						                "parts": [
+						                    {
+						                        "text": "- Zahrajte si online hru\\n- Podívejte se na film nebo seriál\\n- Přečtěte si knihu\\n- Navařte si něco dobrého\\n- Uvařte si lahodný čaj"
+						                    }
+						                ],
+						                "role": "model"
+						            },
+						            "finishReason": "STOP",
+						            "index": 0,
+						            "safetyRatings": [
+						                {
+						                    "category": "HARM_CATEGORY_SEXUALLY_EXPLICIT",
+						                    "probability": "NEGLIGIBLE"
+						                },
+						                {
+						                    "category": "HARM_CATEGORY_HATE_SPEECH",
+						                    "probability": "NEGLIGIBLE"
+						                },
+						                {
+						                    "category": "HARM_CATEGORY_HARASSMENT",
+						                    "probability": "NEGLIGIBLE"
+						                },
+						                {
+						                    "category": "HARM_CATEGORY_DANGEROUS_CONTENT",
+						                    "probability": "NEGLIGIBLE"
+						                }
+						            ]
+						        }
+						    ],
+						    "usageMetadata": {
+						        "promptTokenCount": 42,
+						        "candidatesTokenCount": 47,
+						        "totalTokenCount": 89
+						    }
+						}
+						"""
 
-		if response.status_code == 200:
+		
+		if (response.status_code == 200):
 			response_json = response.json()
+
+		#TESTING=True						# for TESTIG
+		#if (TESTING):
+			#response_json=json.loads(aijsontesting)
+			#print(response_json)
+
 			text = response_json["candidates"][0]["content"]["parts"][0]["text"]
-			print(f"Dnes bude {daily_weather[today]['avg_temp']}°C - {daily_weather[today]['most_common_weather']} a proto doporučuji:\n{text}\n") 
 			
-			print(f"další dny bude:\n")
+			## TESTING prints ##
+			#print(f"Dnes bude {daily_weather[today]['avg_temp']}°C - {daily_weather[today]['most_common_weather']} a proto doporučuji:\n{text}\n") 
+			#
+			#print(f"další dny bude:\n")
+			#for i, day in enumerate(daily_weather):
+			#	if(i==0):
+			#		continue
+			#	print(f"{day}\n{daily_weather[day]['avg_temp']}°C - {daily_weather[day]['most_common_weather']}\n\n")
+
+			###################################
+			email_text = f"Dnes bude {daily_weather[today]['avg_temp']}°C - {daily_weather[today]['most_common_weather']} a proto doporučuji:\n{text}\n\n"
+
+			email_text += "další dny bude:\n"
 			for i, day in enumerate(daily_weather):
-				if(i==0):
+				if i == 0:
 					continue
-				print(f"{day}\n{daily_weather[day]['avg_temp']}°C - {daily_weather[day]['most_common_weather']}\n\n")
+				email_text += f"{day}\n{daily_weather[day]['avg_temp']}°C - {daily_weather[day]['most_common_weather']}\n\n"
 		else:
-			print(f"FAIL: AI_API response: {response.status_code}")
+			print(f"FAIL: AI_API response: {response.status_code}") # log
 
 	except:
 		print("Chyba AI_API požadavek") # log
+
+#print(f"Email: {email_text}")
+
+
+email_html = f"""
+<!DOCTYPE html>
+<html lang="cs">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Denní přehled počasí</title>
+    <style>
+        body {{
+            font-family: Arial, sans-serif;
+            margin: 20px;
+        }}
+        h1 {{
+            color: #333;
+        }}
+        .header {{
+            font-size: 16px;
+            margin-bottom: 20px;
+        }}
+        .header div {{
+            margin-bottom: 10px;
+        }}
+        .weather-report {{
+            margin-top: 20px;
+        }}
+        .weather-day {{
+            margin-bottom: 10px;
+        }}
+        ul {{
+            list-style-type: disc;
+            padding-left: 20px;
+        }}
+        li {{
+            margin-bottom: 5px;
+        }}
+        .divider {{
+            margin: 20px 0;
+            border-top: 2px solid #ccc;
+        }}
+    </style>
+</head>
+<body>
+    <div class="header">
+        <div><strong>{country} : {city}</strong></div>
+        <div>Populace: {population:,}</div>
+        <div>Východ: {datetime.fromtimestamp(int(sunrise)).strftime('%H:%M')} | Západ: {datetime.fromtimestamp(int(sunset)).strftime('%H:%M')}</div>
+        <div class="divider"></div>
+    </div>
+    <h1>Denní přehled počasí <img src="https://openweathermap.org/img/wn/{daily_weather[today]['most_common_icon']}.png" alt="{daily_weather[today]['most_common_weather']}"> </h1>
+    <p>Dnes bude <strong>{daily_weather[today]['avg_temp']}°C - {daily_weather[today]['most_common_weather']}</strong> a proto doporučuji:</p>
+    <ul>
+        {''.join([f'<li>{item}</li>' for item in text.splitlines()])}
+    </ul>
+    <div class="weather-report">
+        <h3>Další dny bude:</h3>
+        {''.join([f'<div class="weather-day"><strong>{day}</strong>: {daily_weather[day]["avg_temp"]}°C - {daily_weather[day]["most_common_weather"]}</div>' for day in daily_weather if day != today])}
+    </div>
+</body>
+</html>
+"""
+
+# POZNAMKA: 
+# [ ....... for day in daily_weather if day != today ] - list comprehension iteruje přes všechny dny a kontoluje že není dnešní datum, protože to už je zpracováno v první části zprávy
+# join spojuje html řetězce aby mezi nimi nebyly další znaky
+
+#####################
+#### Email send: ####
+#####################
+DOMAIN = os.getenv('DOMAIN')
+MAIL_API_KEY = os.getenv('MAIL_API_KEY')
+MAIL_TO = os.getenv('MAIL_TO')
+
+from_email = "WeGoFun <wegofundev@gmail.com>"
+subject = "WeGoFun"
+#text_body = "This will be the text-only version"
+#html_body = "<html><body><b>This is the HTML version</b></body></html>"
+
+try:
+	response = requests.post(
+	    mail(DOMAIN),
+	    auth=('api', MAIL_API_KEY),
+	    files={
+	        'from': (None, from_email),
+	        'to': (None, MAIL_TO),
+	        'subject': (None, subject),
+	        'text': (None, email_text),
+	        'html': (None, email_html)
+	    }
+	)
+	print(response.status_code)
+	print(response.text)
+except:
+	print(f"Email send Error {response.status_code}") # log
+
+
+
+#print(email_html)

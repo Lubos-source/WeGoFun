@@ -8,5 +8,8 @@ services:
     environment:
       - WEATHER_API_KEY=${WEATHER_API_KEY}
       - AI_API_KEY=${AI_API_KEY}
+      - DOMAIN=${DOMAIN}
+      - MAIL_API_KEY=${MAIL_API_KEY}
+      - MAIL_TO=${MAIL_TO}
     ports:
       - "5000:5000"
