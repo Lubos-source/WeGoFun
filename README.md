@@ -11,8 +11,8 @@ Vytvořit automatizovaný systém, který:
 
 ### Kroky k realizaci:
 1. #### Získání dat o počasí:
-- API: Použij OpenWeatherMap API (nebo jiné API pro počasí), které poskytuje aktuální předpověď.
-- Skript: Napiš Python skript, který se připojí k API, získá předpověď na následující den (např. teplotu, srážky) a uloží ji do proměnné nebo databáze.
+- API: Použij OpenWeatherMap API (nebo jiné API pro počasí), které poskytuje aktuální předpověď. ✅
+- Skript: Napiš Python skript, který se připojí k API, získá předpověď na následující den (např. teplotu, srážky) a uloží ji do proměnné nebo databáze. ✅
 
 2. #### Plánování úkolů na základě počasí
 - Podmínky: Definuj pravidla, která se budou rozhodovat podle počasí. Například:
@@ -53,6 +53,7 @@ Funkční automatizovaný systém, který každý den poskytne relevantní infor
 
 ### Poznamky:
 
+Když se změní nastavení Dockerfile / docker-compose.yml nebo soubory, které se kopírují do kontejneru, nutné rebuild image! ``` docker-compose up --build ```
 
 ```
 # DOCKER-COMPOSE
