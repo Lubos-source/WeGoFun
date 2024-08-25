@@ -7,19 +7,30 @@ from datetime import datetime
 from collections import Counter
 
 
+def calculate_daily_statistics(data):
+	avg_temp = round(sum(data['temp']) / len(data['temp']), 1)
+	avg_temp_feel = round(sum(data['temp_feel']) / len(data['temp_feel']), 1)
+	most_common_weather, most_common_icon = Counter(data['weather']).most_common(1)[0][0]
+
+	if most_common_icon.endswith('n'):
+		most_common_icon = most_common_icon[:-1] + 'd'
+
+	return avg_temp, avg_temp_feel, most_common_weather, most_common_icon
+
 # Získání API_KEY z environment variables
 load_dotenv() # for local testing - loading .env variables
-API_KEY = os.getenv('TEST')
-WEATHER_API = os.getenv('WEATHER_API')
+WEATHER_API_KEY = os.getenv('WEATHER_API_KEY')
+AI_API_KEY = os.getenv('AI_API_KEY')
 
 # print("This is Testing")
 # print(f"Secret:{API_KEY}")
-# print(f"Secret:{WEATHER_API}")
+# print(f"Secret:{WEATHER_API_KEY}")
 # print(f"dalsi:{DALSI}")
 
 
-params = {'q': 'Prague,cz', 'APPID': WEATHER_API}
+params = {'q': 'Prague,cz', 'units':'metric', 'APPID': WEATHER_API_KEY}
 # response = requests.get(WEATHER, params=params)
+# response_json = response.json()
 
 # predpoved 5 dni po 3 hodinach: # api.openweathermap.org/data/2.5/forecast?q=Prague,cz&units=metric&appid={APPI_KEY}
 # časy měření předpovědi: 00:00, 03:00, 06:00, 09:00, 12:00, 15:00, 18:00, 21:00, 00:00
@@ -1554,17 +1565,53 @@ print(35*"=")
 #print(daily_weather)
 
 for date, data in daily_weather.items():
-	avg_temp = sum(data['temp']) / len(data['temp'])
-	avg_temp_feel = sum(data['temp_feel']) / len(data['temp_feel'])
-	#most_common_weather = Counter(data['weather']).most_common(1)[0][0]
-	most_common_weather, most_common_icon = Counter(data['weather']).most_common(1)[0][0] # výpočet nejčastěji se vyskytujícího stavu (počasí) a jeho ikona
+	avg_temp, avg_temp_feel, most_common_weather, most_common_icon = calculate_daily_statistics(data) # výpočet prům teplot, nejčastějšího počasí v den + ikona
 
-	# nahrazeni noční ikony za denní
-	if most_common_icon.endswith('n'):
-		most_common_icon = most_common_icon[:-1] + 'd'
+	daily_weather[date].update({
+		"avg_temp": avg_temp,
+		"avg_temp_feel": avg_temp_feel,
+		"most_common_weather": most_common_weather,
+		"most_common_icon": most_common_icon
+	})
+	
+	""" více operací (náročnější):
+	daily_weather[date]["avg_temp"]=avg_temp
+	daily_weather[date]["avg_temp_feel"]=avg_temp_feel
+	daily_weather[date]["most_common_weather"]=most_common_weather
+	daily_weather[date]["most_common_icon"]=most_common_icon
+	"""
 
-	print(f"Date:\t\t\t{date}")
-	print(f"Avg temp:\t\t{avg_temp:.1f}°C")
-	print(f"Avg feel:\t\t{avg_temp_feel:.1f}°C")
-	print(f"weather:\t\t{most_common_weather}")
-	print(f"Icon URL:\t\thttps://openweathermap.org/img/wn/{most_common_icon}.png")
+	#print(f"Date:\t\t\t{date}")
+	#print(f"Avg temp:\t\t{avg_temp:.1f}°C")
+	#print(f"Avg feel:\t\t{avg_temp_feel:.1f}°C")
+	#print(f"weather:\t\t{most_common_weather}")
+	#print(f"Icon URL:\t\thttps://openweathermap.org/img/wn/{most_common_icon}.png")
+
+#print(daily_weather)
+
+today = next(iter(daily_weather)) # získání prvního záznamu (tedy záznam počasí pro dnešek)
+
+prompt = get_prompts(city, daily_weather[today]["most_common_weather"], country)
+
+if not prompt:
+	print("Prompt generation failed.") # log
+else:
+	params = {'key': AI_API_KEY}
+	try:
+		response = requests.post(AI_API, params=params, data=prompt)
+
+		if response.status_code == 200:
+			response_json = response.json()
+			text = response_json["candidates"][0]["content"]["parts"][0]["text"]
+			print(f"Dnes bude {daily_weather[today]['avg_temp']}°C - {daily_weather[today]['most_common_weather']} a proto doporučuji:\n{text}\n") 
+			
+			print(f"další dny bude:\n")
+			for i, day in enumerate(daily_weather):
+				if(i==0):
+					continue
+				print(f"{day}\n{daily_weather[day]['avg_temp']}°C - {daily_weather[day]['most_common_weather']}\n\n")
+		else:
+			print(f"FAIL: AI_API response: {response.status_code}")
+
+	except:
+		print("Chyba AI_API požadavek") # log

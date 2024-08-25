@@ -6,7 +6,7 @@ services:
       context: .
       dockerfile: Dockerfile
     environment:
-      - TEST=${TEST}
-      - WEATHER_API=${WEATHER_API}
+      - WEATHER_API_KEY=${WEATHER_API_KEY}
+      - AI_API_KEY=${AI_API_KEY}
     ports:
       - "5000:5000"

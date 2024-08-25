@@ -18,7 +18,7 @@ Vytvořit automatizovaný systém, který:
 - Podmínky: Definuj pravidla, která se budou rozhodovat podle počasí. Například:
     - Pokud bude hezké počasí, doporučí se venkovní aktivity.
     - Pokud bude pršet, doporučí se domácí úkoly nebo práce, které se dají dělat uvnitř.
-- Automatizace úkolů: Vytvoř skript, který tyto podmínky zpracuje a na jejich základě vytvoří úkoly pro daný den. Můžeš použít Google Calendar API nebo Todoist API k automatickému přidání úkolů.
+- Automatizace úkolů: Vytvoř skript, který tyto podmínky zpracuje a na jejich základě vytvoří úkoly pro daný den. Můžeš použít Google Calendar API nebo Todoist API k automatickému přidání úkolů. ✅ - pomocí AI_API dotazu
 
 3. #### Odesílání denního souhrnu
 - E-mailový klient: Použij SMTP protokol nebo službu jako SendGrid pro automatické odeslání e-mailu s denním souhrnem.
