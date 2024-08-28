@@ -21,7 +21,7 @@ Vytvořit automatizovaný systém, který:
 - Automatizace úkolů: Vytvoř skript, který tyto podmínky zpracuje a na jejich základě vytvoří úkoly pro daný den. Můžeš použít Google Calendar API nebo Todoist API k automatickému přidání úkolů. ✅ - pomocí AI_API dotazu
 
 3. #### Odesílání denního souhrnu
-- E-mailový klient: Použij SMTP protokol nebo službu jako SendGrid pro automatické odeslání e-mailu s denním souhrnem.
+- E-mailový klient: Použij SMTP protokol nebo službu jako SendGrid pro automatické odeslání e-mailu s denním souhrnem. ✅ API Mailgun (nějaká omezení)
 - Mobilní notifikace: Alternativně můžeš nastavit notifikace na mobil (např. pomocí Twilio API pro SMS zprávy).
 
 4. #### Automatizace skriptů
@@ -49,7 +49,14 @@ Vytvořit automatizovaný systém, který:
 Funkční automatizovaný systém, který každý den poskytne relevantní informace na základě počasí a pomůže lépe organizovat čas a úkoly. 
 
 
+## Future:
 
+- předělat API mailgun na google gmail ofiko (težší registrace....)
+- změnit (doplnit) průměrnou teplotu za MIN a MAX v daný den.
+- Web App ?
+- ukládání do dbs ? 
+  - jak AI doporučení (pro případ výpadku)
+  - tak teploty, pro uchování historie
 
 ### Poznamky:
 
