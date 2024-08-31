@@ -8,6 +8,8 @@ from collections import Counter
 
 
 def calculate_daily_statistics(data):
+	minimal=min(data['temp'])
+	maximal=max(data['temp'])
 	avg_temp = round(sum(data['temp']) / len(data['temp']), 1)
 	avg_temp_feel = round(sum(data['temp_feel']) / len(data['temp_feel']), 1)
 	most_common_weather, most_common_icon = Counter(data['weather']).most_common(1)[0][0]
@@ -15,7 +17,7 @@ def calculate_daily_statistics(data):
 	if most_common_icon.endswith('n'):
 		most_common_icon = most_common_icon[:-1] + 'd'
 
-	return avg_temp, avg_temp_feel, most_common_weather, most_common_icon
+	return avg_temp, avg_temp_feel, minimal, maximal, most_common_weather, most_common_icon
 
 # Získání API_KEY z environment variables
 load_dotenv() # for local testing - loading .env variables
@@ -1567,11 +1569,13 @@ for measure in resp['list']:
 # print(daily_weather)
 
 for date, data in daily_weather.items():
-	avg_temp, avg_temp_feel, most_common_weather, most_common_icon = calculate_daily_statistics(data) # výpočet prům teplot, nejčastějšího počasí v den + ikona
+	avg_temp, avg_temp_feel, minimal, maximal, most_common_weather, most_common_icon = calculate_daily_statistics(data) # výpočet prům teplot, nejčastějšího počasí v den + ikona
 
 	daily_weather[date].update({
 		"avg_temp": avg_temp,
 		"avg_temp_feel": avg_temp_feel,
+		"minimal": minimal,
+		"maximal": maximal,
 		"most_common_weather": most_common_weather,
 		"most_common_icon": most_common_icon
 	})
@@ -1665,13 +1669,13 @@ else:
 			#	print(f"{day}\n{daily_weather[day]['avg_temp']}°C - {daily_weather[day]['most_common_weather']}\n\n")
 
 			###################################
-			email_text = f"Dnes bude {daily_weather[today]['avg_temp']}°C - {daily_weather[today]['most_common_weather']} a proto doporučuji:\n{text}\n\n"
+			email_text = f"Dnes bude {daily_weather[today]['avg_temp']}°C - {daily_weather[today]['most_common_weather']}\nmin: {daily_weather[today]['minimal']}°C  max: {daily_weather[today]['maximal']}°C a proto doporučuji:\n{text}\n\n"
 
 			email_text += "další dny bude:\n"
 			for i, day in enumerate(daily_weather):
 				if i == 0:
 					continue
-				email_text += f"{day}\n{daily_weather[day]['avg_temp']}°C - {daily_weather[day]['most_common_weather']}\n\n"
+				email_text += f"{day}\n{daily_weather[day]['avg_temp']}°C - {daily_weather[day]['most_common_weather']}\nmin: {daily_weather[day]['minimal']}°C  max: {daily_weather[day]['maximal']}°C\n\n"
 		else:
 			print(f"FAIL: AI_API response: {response.status_code}") # log
 
@@ -1730,13 +1734,14 @@ email_html = f"""
         <div class="divider"></div>
     </div>
     <h1>Denní přehled počasí <img src="https://openweathermap.org/img/wn/{daily_weather[today]['most_common_icon']}.png" alt="{daily_weather[today]['most_common_weather']}"> </h1>
-    <p>Dnes bude <strong>{daily_weather[today]['avg_temp']}°C - {daily_weather[today]['most_common_weather']}</strong> a proto doporučuji:</p>
+    <p>Dnes bude <strong>{daily_weather[today]['avg_temp']}°C - {daily_weather[today]['most_common_weather']}</strong> </p>
+    <p><strong>min: {daily_weather[today]['minimal']}°C  max: {daily_weather[today]['maximal']}°C</strong> a proto doporučuji: </p>
     <ul>
         {''.join([f'<li>{item}</li>' for item in text.splitlines()])}
     </ul>
     <div class="weather-report">
         <h3>Další dny bude:</h3>
-        {''.join([f'<div class="weather-day"><strong>{day}</strong>: {daily_weather[day]["avg_temp"]}°C - {daily_weather[day]["most_common_weather"]}</div>' for day in daily_weather if day != today])}
+        {''.join([f'<div class="weather-day"><strong>{day}</strong>: {daily_weather[day]["avg_temp"]}°C - {daily_weather[day]["most_common_weather"]}<br/><p>min: {daily_weather[day]["minimal"]}°C  max: {daily_weather[day]["maximal"]}°C</p></div>' for day in daily_weather if day != today])}
     </div>
 </body>
 </html>
