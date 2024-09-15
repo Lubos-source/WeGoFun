@@ -65,26 +65,51 @@ Když se změní nastavení Dockerfile / docker-compose.yml nebo soubory, které
 ```
 # DOCKER-COMPOSE (do budoucna i s dbs)
 
-version: '3.8'
+version: '3'
 services:
-  web:
-    build: .
+  app:
+    build:
+    context: .
+    dockerfile: Dockerfile
+    container_name: weather_app
+    depends_on:
+      - db
+    environment:
+      - POSTGRES_HOST=db
+      - POSTGRES_PORT=5432
+      - POSTGRES_DB=weather_db
+      - POSTGRES_USER=your_user
+      - POSTGRES_PASSWORD=your_password
+      - WEATHER_API_KEY=${WEATHER_API_KEY}
+      - AI_API_KEY=${AI_API_KEY}
+      - DOMAIN=${DOMAIN}
+      - MAIL_API_KEY=${MAIL_API_KEY}
+      - MAIL_TO=${MAIL_TO}
     ports:
       - "5000:5000"
     volumes:
-      - .:/app
-    command: python app.py
+      - ./app:/app
+    networks:
+      - weather_network
 
   db:
-    image: postgres:13
+    image: postgres:latest
+    container_name: postgres_db
     environment:
-      POSTGRES_USER: user
-      POSTGRES_PASSWORD: password
-      POSTGRES_DB: mydatabase
+      POSTGRES_DB: weather_db
+      POSTGRES_USER: your_user
+      POSTGRES_PASSWORD: your_password
     volumes:
-      - postgres_data:/var/lib/postgresql/data
+      - pgdata:/var/lib/postgresql/data
+    networks:
+      - weather_network
+    ports:
+      - "5432:5432"
 
 volumes:
-  postgres_data:
+  pgdata:
+
+networks:
+  weather_network:
 
 ```
