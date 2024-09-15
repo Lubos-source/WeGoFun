@@ -62,54 +62,44 @@ Funkční automatizovaný systém, který každý den poskytne relevantní infor
 
 Když se změní nastavení Dockerfile / docker-compose.yml nebo soubory, které se kopírují do kontejneru, nutné rebuild image! ``` docker-compose up --build ```
 
+
+# Verze 2 postgresql-integration
+
+Nový kontejner "postgresql" který bude databází pro ukládání doporučení od AI pro budoucí odpojení.
+
+PostgresSQL má persistentní storage `pgdata` pokud udělám změnu jen v apliakci a ne databázi stačí:
 ```
-# DOCKER-COMPOSE (do budoucna i s dbs)
-
-version: '3'
-services:
-  app:
-    build:
-    context: .
-    dockerfile: Dockerfile
-    container_name: weather_app
-    depends_on:
-      - db
-    environment:
-      - POSTGRES_HOST=db
-      - POSTGRES_PORT=5432
-      - POSTGRES_DB=weather_db
-      - POSTGRES_USER=your_user
-      - POSTGRES_PASSWORD=your_password
-      - WEATHER_API_KEY=${WEATHER_API_KEY}
-      - AI_API_KEY=${AI_API_KEY}
-      - DOMAIN=${DOMAIN}
-      - MAIL_API_KEY=${MAIL_API_KEY}
-      - MAIL_TO=${MAIL_TO}
-    ports:
-      - "5000:5000"
-    volumes:
-      - ./app:/app
-    networks:
-      - weather_network
-
-  db:
-    image: postgres:latest
-    container_name: postgres_db
-    environment:
-      POSTGRES_DB: weather_db
-      POSTGRES_USER: your_user
-      POSTGRES_PASSWORD: your_password
-    volumes:
-      - pgdata:/var/lib/postgresql/data
-    networks:
-      - weather_network
-    ports:
-      - "5432:5432"
-
-volumes:
-  pgdata:
-
-networks:
-  weather_network:
-
+docker-compose stop app
 ```
+Tím se vypne conteiner app
+
+po změnách se znovu sestaví:
+```
+docker-compose up --build app
+```
+i se smazáním starého kontejneru:
+```
+docker-compose rm -f app
+```
+a pak znovu sestavit:
+```
+docker-compose up --build app
+```
+**smazání VŠEHO i s PERSIST storage:**
+```
+docker-compose down -v
+```
+Ponechá image - což jsou systém, knihovny atd... pokdu změním jen konfiguraci stačí pak zapnout pomocí
+```
+docker-compose up
+```
+
+### Kontrola persistent storage 
+Pro kontrolu persistentního storage apliakce (data), kde se ukládá do txt infomrace co dělat:
+
+Po spuštění up --build se kontejner po dokončení vypne, takže nejde zkontrolovat, ale použitím interaktivního spuštění vše jde:
+```
+docker-compose run --rm app sh
+```
+v `app/data/` vidím že se správně načítá persistentní storage z hostitelského pc.
+

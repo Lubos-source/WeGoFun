@@ -19,6 +19,32 @@ def calculate_daily_statistics(data):
 
 	return avg_temp, avg_temp_feel, minimal, maximal, most_common_weather, most_common_icon
 
+
+def clean_text(text):
+	znaky_k_odstraneni = ['-', '/', '"', "'", '#', '&', '|', '\\']
+	for znak in znaky_k_odstraneni:
+		clean = text.replace(znak, '')
+	return clean
+
+def save_to_file(file, records, weather, city, country):
+	# Absolutní cesta k uložení souboru v persistentní složce /app/data
+    current_dir = os.path.join(os.path.dirname(os.path.abspath(__file__)), "data")
+	# Zkontroluje, zda složka existuje, pokud ne, vytvoří ji
+    if not os.path.exists(current_dir):
+        os.makedirs(current_dir)
+    # Kombinace aktuálního adresáře a názvu souboru
+    absolutni_cesta = os.path.join(current_dir, file)
+
+    with open(absolutni_cesta, "a", encoding="utf-8") as f:
+        for record in records:
+            if record.strip():  # Kontrola, zda záznam není prázdný
+                clean = clean_text(record)
+                # fromát pro uložení do souboru:
+                save = f"{clean};;{weather};;{city};;{country}\n"
+                f.write(save)
+
+
+
 # Získání API_KEY z environment variables
 load_dotenv() # for local testing - loading .env variables
 WEATHER_API_KEY = os.getenv('WEATHER_API_KEY')
@@ -1659,15 +1685,10 @@ else:
 
 			text = response_json["candidates"][0]["content"]["parts"][0]["text"]
 			
-			## TESTING prints ##
-			#print(f"Dnes bude {daily_weather[today]['avg_temp']}°C - {daily_weather[today]['most_common_weather']} a proto doporučuji:\n{text}\n") 
-			#
-			#print(f"další dny bude:\n")
-			#for i, day in enumerate(daily_weather):
-			#	if(i==0):
-			#		continue
-			#	print(f"{day}\n{daily_weather[day]['avg_temp']}°C - {daily_weather[day]['most_common_weather']}\n\n")
-
+			###################################
+			# Save AI recomendation to file (persistant storage in docker) #
+			zaznamy = text.split("\n")
+			save_to_file("recomendations.txt",zaznamy,daily_weather[today]['most_common_weather'],city,country)
 			###################################
 			email_text = f"Dnes bude {daily_weather[today]['avg_temp']}°C - {daily_weather[today]['most_common_weather']}\nmin: {daily_weather[today]['minimal']}°C  max: {daily_weather[today]['maximal']}°C a proto doporučuji:\n{text}\n\n"
 
@@ -1763,6 +1784,7 @@ subject = "WeGoFun"
 #text_body = "This will be the text-only version"
 #html_body = "<html><body><b>This is the HTML version</b></body></html>"
 
+# --------- EMAIL SEND ---------
 try:
 	response = requests.post(
 	    mail(DOMAIN),
@@ -1780,6 +1802,8 @@ try:
 except:
 	print(f"Email send Error {response.status_code}") # log
 
+# testing
+#print("odeslání emailu - TESTING - pozastaveno")
 
 
 #print(email_html)

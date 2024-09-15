@@ -1,4 +1,4 @@
-version: '3.8'
+version: '3.8' # zasataralé toto definovat - odstranit
 
 services:
   app:
@@ -11,5 +11,27 @@ services:
       - DOMAIN=${DOMAIN}
       - MAIL_API_KEY=${MAIL_API_KEY}
       - MAIL_TO=${MAIL_TO}
+      - POSTGRES_DB=${POSTGRES_DB}
+      - POSTGRES_USER=${POSTGRES_USER}
+      - POSTGRES_PASSWORD=${POSTGRES_PASSWORD}
+      - POSTGRES_HOST=postgres  # Název služby (kontejneru)
     ports:
       - "5000:5000"
+    depends_on:
+      - postgres  # Zajistí, že PostgreSQL se spustí před aplikací
+    volumes:
+      - ./data:/app/data
+
+  postgres:
+    image: postgres:14  # Verze PostgreSQL
+    environment:
+      - POSTGRES_DB=${POSTGRES_DB}
+      - POSTGRES_USER=${POSTGRES_USER}
+      - POSTGRES_PASSWORD=${POSTGRES_PASSWORD}
+    volumes:
+      - pgdata:/var/lib/postgresql/data  # Uloží data z duvodu persistence
+    ports:
+      - "5432:5432" # mapování portu kontejner:host - abych se dostal k databázi z hostitelskeho pc
+
+volumes:
+  pgdata:
