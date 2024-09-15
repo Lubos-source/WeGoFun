@@ -35,12 +35,13 @@ def save_to_file(file, records, weather, city, country):
     # Kombinace aktuálního adresáře a názvu souboru
     absolutni_cesta = os.path.join(current_dir, file)
 
+    timestamp = datetime.now().strftime('%Y-%m-%d %H:%M:%S') # pro ulozeni casu kdy byl zaznam vytvoren
     with open(absolutni_cesta, "a", encoding="utf-8") as f:
         for record in records:
             if record.strip():  # Kontrola, zda záznam není prázdný
                 clean = clean_text(record)
                 # fromát pro uložení do souboru:
-                save = f"{clean};;{weather};;{city};;{country}\n"
+                save = f"{clean};;{weather};;{city};;{country};;{timestamp}\n"
                 f.write(save)
 
 

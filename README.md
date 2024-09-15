@@ -91,7 +91,7 @@ docker-compose down -v
 ```
 Ponechá image - což jsou systém, knihovny atd... pokdu změním jen konfiguraci stačí pak zapnout pomocí
 ```
-docker-compose up
+docker-compose up --build
 ```
 
 ### Kontrola persistent storage 
