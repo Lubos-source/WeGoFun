@@ -57,6 +57,7 @@ Funkční automatizovaný systém, který každý den poskytne relevantní infor
 - ukládání do dbs ? 
   - jak AI doporučení (pro případ výpadku)
   - tak teploty, pro uchování historie
+- přidat jednoduchou webovou aplikaci pro vizualizaci dat. - pythonanywhere, který používám pro crontab job, mi poskytuje 1 webovou stránku free, lze využít.
 
 ### Poznamky:
 

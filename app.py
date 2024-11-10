@@ -1624,11 +1624,12 @@ for date, data in daily_weather.items():
 
 today = next(iter(daily_weather)) # získání prvního záznamu (tedy záznam počasí pro dnešek)
 
-prompt = get_prompts(city, daily_weather[today]["most_common_weather"], country)
+prompt = get_prompts(city, daily_weather[today]["most_common_weather"], maximal, country)
 
 if not prompt:
 	print("Prompt generation failed.") # log
 else:
+	#print(f"prompt:\n {prompt}")
 	params = {'key': AI_API_KEY}
 	try:
 		response = requests.post(AI_API, params=params, data=prompt)
